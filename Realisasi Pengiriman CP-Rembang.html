@@ -1011,7 +1011,7 @@ const CLR_KEY='rp7911_cleared_v1',REM_KEY='rp7911_removed_v1',ST_KEY='rp7911_sta
 let removed=[];try{removed=JSON.parse(localStorage.getItem(REM_KEY)||'[]');if(localStorage.getItem(CLR_KEY)==='1')removed=[...new Set([...removed,...BASE.map(r=>r.date)])]}catch(e){removed=[]}
 let SROWS=STATUS0.map(r=>({...r})),SSNAP=STATUS_SNAP,SSRC='file Realization 24-10-2026 08:46';
 try{const s=JSON.parse(localStorage.getItem(ST_KEY)||'null');if(s&&s.rows){SROWS=s.rows;SSNAP=s.snap;SSRC=s.src}else if(localStorage.getItem(STR_KEY)==='1'){SROWS=[]}}catch(e){}
-function rebuild(){const ids=new Set(imported.map(r=>r.id));D=[...BASE.filter(r=>!removed.includes(r.date)&&!ids.has(r.id)),...imported];syncBtns()}
+function rebuild(){const ids=new Set(imported.map(r=>r.id));D=[...BASE.filter(r=>!removed.includes(r.date)&&!ids.has(r.id)),...imported];D.forEach(r=>{if(r.prod==='MaxPro Curah')r.prod='SprintPro Curah'});if(Array.isArray(SROWS))SROWS.forEach(r=>{if(r.prod==='MaxPro Curah')r.prod='SprintPro Curah'});syncBtns()}
 function syncBtns(){$('#clrall').disabled=!D.length&&!SROWS.length}
 const KEEPW=new Set(['PT','CV','RPU','WPS','WPU','KUD','UD','APBD','SIDI','MSA','VUB','RDM','PRY','GUD','DIY','TOL','UGM','SMN','BP','CU','JT','II','RT','RW']);
 function tcase(s){
@@ -1023,7 +1023,11 @@ function tcase(s){
 }
 function prodName(p){
   if(p==='UltraPro Curah')return p;
-  return p.replace('SMN ','').replace(' KRAFT 2P','').replace(/ KG/g,' kg').replace(/ (HH|MH) B$/,' ($1)');
+  if(p==='EzPro Curah')return p;
+  if(p==='MaxPro Curah'||p==='SprintPro Curah')return 'SprintPro Curah';
+  let s=p.replace('SMN ','').replace(' KRAFT 2P','').replace(/ KG/g,' kg').replace(/ (HH|MH) B$/,' ($1)');
+  if(s.includes('MaxPro'))s=s.replace(/MaxPro/g,'SprintPro');
+  return s;
 }
 const PROV={'JAWA TENGAH':'Jawa Tengah','JAWA TIMUR':'Jawa Timur','DIY':'DI Yogyakarta'};
 const p2=n=>String(n).padStart(2,'0');
@@ -1131,7 +1135,7 @@ function mapSigProduct(p,cnv){
   const pl=p.toLowerCase();
   if(pl.includes('curah')||cnv==='90'||cnv==='91'||cnv==='92'){
     if(pl.includes('apro')||pl.includes('ultra'))return 'UltraPro Curah';
-    if(pl.includes('tpro')||pl.includes('max'))return 'MaxPro Curah';
+    if(pl.includes('tpro')||pl.includes('max')||pl.includes('sprint'))return 'SprintPro Curah';
     if(pl.includes('zpro')||pl.includes('ez'))return 'EzPro Curah';
     return 'UltraPro Curah';
   }
